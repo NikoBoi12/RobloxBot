@@ -2,6 +2,8 @@ import discord
 from discord.ext import commands
 import logging
 import os
+import datastore
+from authorizedUsers import authorizedUsers
 
 from dotenv import load_dotenv
 
@@ -19,6 +21,12 @@ intents.message_content = True
 intents.members = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
+
+
+def is_allowed_user():
+    def predicate(interaction: discord.Interaction) -> bool:
+        return interaction.user.id in authorizedUsers
+    return discord.app_commands.check(predicate)
 
 @bot.event 
 async def on_ready():
@@ -61,6 +69,52 @@ async def toptippers(interaction: discord.Interaction):
     view = leaderBoards.ButtonView(data_name="Tips", most_recent_pages=top_rollers, leader_pages=[embed], name="Tippers")
 
     await interaction.followup.send(embed=embed, view=view)
+
+
+@bot.tree.command(name="givedarkdollars", description="Gives darkdollars to a user")
+@discord.app_commands.describe(userid="The roblox userid", amount="Amount of DarkDollars to give")
+@is_allowed_user()
+async def givedarkdollars(interaction: discord.Interaction, userid: int, amount: int):
+    await interaction.response.defer()
+
+    datastore_class = datastore.DataStore(userid=userid)
+    current_data = datastore_class.get_Datastore()
+
+    if "value" in current_data and "DarkDollars" in current_data["value"]:
+        current_data["value"]["DarkDollars"] += amount
+    else:
+        await interaction.followup.send(f"Failed to give {userid} Dark Dollars")
+        return
+
+    datastore_class.update_datastore(json=current_data["value"])
+
+    await interaction.followup.send(f"Sucessfully gave {userid} Dark Dollars")
+
+
+
+@bot.tree.command(name="giveaura", description="Gives an aura to a user")
+@discord.app_commands.describe(userid="The roblox userid", aura_name="What aura to give to that user")
+@is_allowed_user()
+async def givedarkdollars(interaction: discord.Interaction, userid: int, aura_name: str):
+    await interaction.response.defer()
+
+    datastore_class = datastore.DataStore(userid=userid)
+    current_data = datastore_class.get_Datastore()
+
+    if "value" in current_data and "Index" in current_data["value"]:
+        if not (aura_name in current_data["value"]["Index"]):
+            current_data["value"]["Index"].append(aura_name)
+        else:
+            await interaction.followup.send(f"User already has {aura_name}")
+            return
+        
+    else:
+        await interaction.followup.send(f"Failed to give {userid} {aura_name}")
+        return
+
+    datastore_class.update_datastore(json=current_data["value"])
+
+    await interaction.followup.send(f"Sucessfully gave {userid} {aura_name}")
 
 
 if token:
