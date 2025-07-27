@@ -37,18 +37,6 @@ async def on_ready():
         print(f"Failed to sync commands: {e}")
 
 
-"""
-@bot.event
-async def on_message(message):
-    if message.author == bot.user:
-        return
- 
-    if "say hi to bestie for me bot" in message.content.lower():
-        while True:
-            await message.channel.send("hi bestie <@1282867739178045532>")
-        
-"""
-
 @bot.tree.command(name="toprollers", description="Gets the top rollers in the game!")
 async def toproller(interaction: discord.Interaction):
     await interaction.response.defer()
@@ -88,14 +76,14 @@ async def givedarkdollars(interaction: discord.Interaction, userid: int, amount:
 
     datastore_class.update_datastore(json=current_data["value"])
 
-    await interaction.followup.send(f"Sucessfully gave {userid} Dark Dollars")
+    await interaction.followup.send(f"Successfully gave {userid} Dark Dollars")
 
 
 
 @bot.tree.command(name="giveaura", description="Gives an aura to a user")
 @discord.app_commands.describe(userid="The roblox userid", aura_name="What aura to give to that user")
 @is_allowed_user()
-async def givedarkdollars(interaction: discord.Interaction, userid: int, aura_name: str):
+async def giveaura(interaction: discord.Interaction, userid: int, aura_name: str):
     await interaction.response.defer()
 
     datastore_class = datastore.DataStore(userid=userid)
@@ -114,7 +102,7 @@ async def givedarkdollars(interaction: discord.Interaction, userid: int, aura_na
 
     datastore_class.update_datastore(json=current_data["value"])
 
-    await interaction.followup.send(f"Sucessfully gave {userid} {aura_name}")
+    await interaction.followup.send(f"Successfully gave {userid} {aura_name}")
 
 
 if token:
